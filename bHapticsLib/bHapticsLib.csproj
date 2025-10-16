@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	
 	<PropertyGroup>
-		<TargetFrameworks>netstandard20;netstandard21;net35;net45;net50</TargetFrameworks>
-		<LangVersion>8.0</LangVersion>
+		<TargetFrameworks>netstandard21;net90</TargetFrameworks>
+		<LangVersion>12.0</LangVersion>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
@@ -14,18 +14,20 @@
         <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
 		<DocumentationFile>$(SolutionDir)bHapticsLib\bHapticsLib.xml</DocumentationFile>
 		
-		<Authors>Herp Derpinstine</Authors>
+		<Authors>Herp Derpinstine; nalathethird (modernization)</Authors>
 		<Description>An Open-Source .NET Library for bHaptics Support.
-Supports .NET Framework 3.5 through .NET 6 and beyond.</Description>
+Modernized for .NET Standard 2.1 and .NET 9 with native WebSocket support.
+Original by Herp Derpinstine, modernized by nalathethird for Resonite/FrooxEngine compatibility.</Description>
 		<PackageId>bHapticsLib</PackageId>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-		<PackageProjectUrl>https://github.com/HerpDerpinstine/bHapticsLib</PackageProjectUrl>
-        <PackageTags>bHaptics</PackageTags>
+		<PackageProjectUrl>https://github.com/nalathethird/bHapticsLib</PackageProjectUrl>
+        <PackageTags>bHaptics;haptics</PackageTags>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/HerpDerpinstine/bHapticsLib.git</RepositoryUrl>
-        <Title>bHapticsLib</Title>
-        <Version>1.0.6</Version>
+		<RepositoryUrl>https://github.com/nalathethird/bHapticsLib.git</RepositoryUrl>
+        <Title>bHapticsLib (Modernized)</Title>
+        <Version>1.0.7</Version>
+		<PackageReleaseNotes>v1.0.7 - Modernized for .NET 9 with native ClientWebSocket. Removed deprecated framework targets. Optimized for Resonite/FrooxEngine.</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -52,10 +54,6 @@ Supports .NET Framework 3.5 through .NET 6 and beyond.</Description>
 	  </Compile>
 	  <Compile Include="..\Properties\BuildInfo.cs" Link="Properties\BuildInfo.cs">
 	  </Compile>	
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <PackageReference Include="WebSocketDotNet" Version="1.0.0" />
 	</ItemGroup>
 	
 	<ItemGroup>

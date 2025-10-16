@@ -8,6 +8,59 @@ namespace bHapticsLib
     public static class bHapticsManager
 #pragma warning restore IDE1006 // Naming Styles
     {
+        #region Events
+        /// <summary>
+        /// Fires when any device connects or disconnects from bHaptics Player.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public static event EventHandler<DeviceStatusChangedEventArgs> DeviceStatusChanged
+        {
+            add { Connection.DeviceStatusChanged += value; }
+            remove { Connection.DeviceStatusChanged -= value; }
+        }
+
+        /// <summary>
+        /// Fires when connection to bHaptics Player is successfully established.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public static event EventHandler<ConnectionStatusChangedEventArgs> ConnectionEstablished
+        {
+            add { Connection.ConnectionEstablished += value; }
+            remove { Connection.ConnectionEstablished -= value; }
+        }
+
+        /// <summary>
+        /// Fires when connection to bHaptics Player is lost or disconnected.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public static event EventHandler<ConnectionStatusChangedEventArgs> ConnectionLost
+        {
+            add { Connection.ConnectionLost += value; }
+            remove { Connection.ConnectionLost -= value; }
+        }
+
+        /// <summary>
+        /// Fires whenever the connection status changes.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public static event EventHandler<ConnectionStatusChangedEventArgs> StatusChanged
+        {
+            add { Connection.StatusChanged += value; }
+            remove { Connection.StatusChanged -= value; }
+        }
+
+        /// <summary>
+        /// Fires when a device's battery level changes.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// Note: Battery updates may not be frequent - typical interval is every few seconds to minutes.
+        /// </summary>
+        public static event EventHandler<BatteryLevelChangedEventArgs> BatteryLevelChanged
+        {
+            add { Connection.BatteryLevelChanged += value; }
+            remove { Connection.BatteryLevelChanged -= value; }
+        }
+        #endregion
+
         #region Max Values
         /// <value>Max Intensity of Point in Integer Array</value>
         public const int MaxIntensityInInt = 500;
@@ -24,6 +77,14 @@ namespace bHapticsLib
 
         /// <value>Current Status of Connection</value>
         public static bHapticsStatus Status { get => Connection.Status; }
+
+        /// <summary>Gets the last error from the connection for debugging</summary>
+        /// <returns>Error message string</returns>
+        public static string GetLastError() => Connection.GetLastError();
+
+        /// <summary>Gets detailed connection log for debugging connection issues</summary>
+        /// <returns>Full connection log with all attempts and state changes</returns>
+        public static string GetConnectionLog() => Connection.GetConnectionLog();
 
         /// <summary>Connects to the bHaptics Player</summary>
         /// <param name="id">Application Identifier</param>
@@ -77,6 +138,14 @@ namespace bHapticsLib
         /// <returns>true if there is a motor active, otherwise false</returns>
         public static bool IsAnyMotorActive(PositionID type)
             => GetDeviceStatus(type)?.ContainsValueMoreThan(0) ?? false;
+
+        /// <summary>
+        /// Gets the battery level for a specific device
+        /// </summary>
+        /// <param name="type">The device position</param>
+        /// <returns>Battery percentage (0-100) if available, otherwise null</returns>
+        public static int? GetBatteryLevel(PositionID type)
+            => Connection.GetBatteryLevel(type);
         #endregion
 
         #region IsPlaying

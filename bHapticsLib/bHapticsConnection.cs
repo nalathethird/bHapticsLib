@@ -15,6 +15,42 @@ namespace bHapticsLib
     public class bHapticsConnection : ThreadedTask
 #pragma warning restore IDE1006 // Naming Styles
     {
+        #region Events
+        /// <summary>
+        /// Fires when any device connects or disconnects from bHaptics Player.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public event EventHandler<DeviceStatusChangedEventArgs> DeviceStatusChanged;
+
+        /// <summary>
+        /// Fires when connection to bHaptics Player is successfully established.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public event EventHandler<ConnectionStatusChangedEventArgs> ConnectionEstablished;
+
+        /// <summary>
+        /// Fires when connection to bHaptics Player is lost or disconnected.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public event EventHandler<ConnectionStatusChangedEventArgs> ConnectionLost;
+
+        /// <summary>
+        /// Fires whenever the connection status changes.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public event EventHandler<ConnectionStatusChangedEventArgs> StatusChanged;
+
+        /// <summary>
+        /// Fires when a device's battery level changes.
+        /// This event is raised on a background thread - subscribers must handle thread safety.
+        /// </summary>
+        public event EventHandler<BatteryLevelChangedEventArgs> BatteryLevelChanged;
+
+        private Dictionary<PositionID, bool> _lastDeviceStates = new Dictionary<PositionID, bool>();
+        private Dictionary<PositionID, int?> _lastBatteryLevels = new Dictionary<PositionID, int?>();
+        private bHapticsStatus _lastStatus = bHapticsStatus.Disconnected;
+        #endregion
+
         #region Type Cache
         private static readonly Type intType = typeof(int);
         private static readonly Type byteType = typeof(byte);
@@ -155,8 +191,14 @@ namespace bHapticsLib
                     Socket.TryConnect();
                 }
 
+                // Check for status changes
+                CheckAndFireStatusEvents();
+
                 if (IsConnected())
                 {
+                    // Check for device changes
+                    CheckAndFireDeviceEvents();
+
                     RegisterRequest registerRequest;
                     while ((registerRequest = RegisterQueue.Dequeue()) != null)
                         Packet.Register.Add(registerRequest);
@@ -174,6 +216,103 @@ namespace bHapticsLib
 
                 if (ShouldRun)
                     Thread.Sleep(1);
+            }
+        }
+
+        private void CheckAndFireStatusEvents()
+        {
+            bHapticsStatus currentStatus = Status;
+            
+            if (currentStatus != _lastStatus)
+            {
+                var args = new ConnectionStatusChangedEventArgs(_lastStatus, currentStatus);
+                
+                // Fire general status changed event
+                try
+                {
+                    StatusChanged?.Invoke(this, args);
+                }
+                catch { /* Don't let subscriber exceptions crash the thread */ }
+
+                // Fire specific events
+                if (_lastStatus != bHapticsStatus.Connected && currentStatus == bHapticsStatus.Connected)
+                {
+                    try
+                    {
+                        ConnectionEstablished?.Invoke(this, args);
+                    }
+                    catch { }
+                }
+                else if (_lastStatus == bHapticsStatus.Connected && currentStatus != bHapticsStatus.Connected)
+                {
+                    try
+                    {
+                        ConnectionLost?.Invoke(this, args);
+                    }
+                    catch { }
+                }
+
+                _lastStatus = currentStatus;
+            }
+        }
+
+        private void CheckAndFireDeviceEvents()
+        {
+            if (Socket?.LastResponse?.ConnectedPositions == null)
+                return;
+
+            // Check all possible device positions
+            foreach (PositionID position in Enum.GetValues(typeof(PositionID)))
+            {
+                // Skip the "All" type positions that aren't real devices
+                if (position == PositionID.Vest) // Vest is handled via VestFront/VestBack
+                    continue;
+
+                bool wasConnected = _lastDeviceStates.ContainsKey(position) && _lastDeviceStates[position];
+                bool isConnected = IsDeviceConnected(position);
+
+                // Check for device connection/disconnection
+                if (wasConnected != isConnected)
+                {
+                    _lastDeviceStates[position] = isConnected;
+
+                    var args = new DeviceStatusChangedEventArgs(position, isConnected);
+                    
+                    try
+                    {
+                        DeviceStatusChanged?.Invoke(this, args);
+                    }
+                    catch { /* Don't let subscriber exceptions crash the thread */ }
+                }
+
+                // Check for battery level changes (only for connected devices)
+                if (isConnected)
+                {
+                    int? previousBattery = _lastBatteryLevels.ContainsKey(position) ? _lastBatteryLevels[position] : null;
+                    int? currentBattery = GetBatteryLevel(position);
+
+                    // Fire event if battery level changed
+                    if (currentBattery != previousBattery)
+                    {
+                        _lastBatteryLevels[position] = currentBattery;
+
+                        var batteryArgs = new BatteryLevelChangedEventArgs(position, currentBattery, previousBattery);
+
+                        try
+                        {
+                            BatteryLevelChanged?.Invoke(this, batteryArgs);
+                        }
+                        catch { /* Don't let subscriber exceptions crash the thread */ }
+                    }
+                }
+                else
+                {
+                    // Device disconnected - clear battery cache
+                    if (_lastBatteryLevels.ContainsKey(position))
+                    {
+                        _lastBatteryLevels.Remove(position);
+                    }
+                }
             }
         }
 
@@ -205,6 +344,24 @@ namespace bHapticsLib
         }
 
         internal bool IsConnected() => Socket?.IsConnected() ?? false;
+
+        /// <summary>Gets the last error message from the WebSocket connection</summary>
+        /// <returns>Error message string or "No error" if connection is healthy</returns>
+        public string GetLastError()
+        {
+            if (Socket == null)
+                return "Socket not initialized";
+            return Socket.GetLastError();
+        }
+
+        /// <summary>Gets detailed connection log for debugging</summary>
+        /// <returns>Connection log string with all connection attempts and state changes</returns>
+        public string GetConnectionLog()
+        {
+            if (Socket == null)
+                return "Socket not initialized";
+            return Socket.GetConnectionLog();
+        }
 
         /// <value>Current Status of Connection</value>
         public bHapticsStatus Status
@@ -266,6 +423,54 @@ namespace bHapticsLib
                     returnval[i] = posArray[i].AsInt;
                 return returnval;
             }
+        }
+
+        /// <summary>
+        /// Gets the battery level for a specific device
+        /// </summary>
+        /// <param name="type">The device position</param>
+        /// <returns>Battery percentage (0-100) if available, otherwise null</returns>
+        public int? GetBatteryLevel(PositionID type)
+        {
+            if ((Socket == null) || (Socket.LastResponse == null))
+                return null;
+
+            // Check if battery data exists in the Battery object
+            JSONObject batteryData = Socket.LastResponse.Battery;
+            if (batteryData != null && !batteryData.IsNull)
+            {
+                string positionKey = type.ToPacketString();
+                JSONNode batteryNode = batteryData[positionKey];
+                
+                if (batteryNode != null && !batteryNode.IsNull)
+                {
+                    int batteryLevel = batteryNode.AsInt;
+                    // Clamp to 0-100 range
+                    return batteryLevel.Clamp(0, 100);
+                }
+            }
+
+            // Fallback: Some devices may include battery in Status object
+            // Format might be: Status[device]["battery"] or Status[device].battery
+            JSONObject statusData = Socket.LastResponse.Status;
+            if (statusData != null && !statusData.IsNull)
+            {
+                string positionKey = type.ToPacketString();
+                JSONNode deviceStatus = statusData[positionKey];
+                
+                if (deviceStatus != null && !deviceStatus.IsNull && deviceStatus.IsObject)
+                {
+                    // Check for battery field in device status
+                    JSONNode batteryNode = deviceStatus.AsObject["battery"];
+                    if (batteryNode != null && !batteryNode.IsNull)
+                    {
+                        int batteryLevel = batteryNode.AsInt;
+                        return batteryLevel.Clamp(0, 100);
+                    }
+                }
+            }
+
+            return null;
         }
         #endregion
 

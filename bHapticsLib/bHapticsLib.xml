@@ -7,6 +7,36 @@
         <member name="T:bHapticsLib.bHapticsConnection">
             <summary>bHaptics Player Connection Handler</summary>
         </member>
+        <member name="E:bHapticsLib.bHapticsConnection.DeviceStatusChanged">
+            <summary>
+            Fires when any device connects or disconnects from bHaptics Player.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsConnection.ConnectionEstablished">
+            <summary>
+            Fires when connection to bHaptics Player is successfully established.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsConnection.ConnectionLost">
+            <summary>
+            Fires when connection to bHaptics Player is lost or disconnected.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsConnection.StatusChanged">
+            <summary>
+            Fires whenever the connection status changes.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsConnection.BatteryLevelChanged">
+            <summary>
+            Fires when a device's battery level changes.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
         <member name="P:bHapticsLib.bHapticsConnection.IPAddress">
             <value>IP Address of Host Device running the bHaptics Player</value>
         </member>
@@ -37,6 +67,14 @@
             <param name="tryToReconnect">If the Connection should attempt to Reconnect after failure or unexpected closure</param>
             <param name="maxRetries">Maximum number of Connection Retry Attempts to Perform, 0 for infinite, default value is 5</param>
         </member>
+        <member name="M:bHapticsLib.bHapticsConnection.GetLastError">
+            <summary>Gets the last error message from the WebSocket connection</summary>
+            <returns>Error message string or "No error" if connection is healthy</returns>
+        </member>
+        <member name="M:bHapticsLib.bHapticsConnection.GetConnectionLog">
+            <summary>Gets detailed connection log for debugging</summary>
+            <returns>Connection log string with all connection attempts and state changes</returns>
+        </member>
         <member name="P:bHapticsLib.bHapticsConnection.Status">
             <value>Current Status of Connection</value>
         </member>
@@ -51,6 +89,13 @@
         <member name="M:bHapticsLib.bHapticsConnection.GetDeviceStatus(bHapticsLib.PositionID)">
             <summary>Gets the current status a specific device.</summary>
             <returns>An Integer Array containing the current intensity value for each motor of the device</returns>
+        </member>
+        <member name="M:bHapticsLib.bHapticsConnection.GetBatteryLevel(bHapticsLib.PositionID)">
+            <summary>
+            Gets the battery level for a specific device
+            </summary>
+            <param name="type">The device position</param>
+            <returns>Battery percentage (0-100) if available, otherwise null</returns>
         </member>
         <member name="M:bHapticsLib.bHapticsConnection.IsPlaying(System.String)">
             <summary>Gets if a specified pattern is currently playing</summary>
@@ -119,6 +164,37 @@
         <member name="T:bHapticsLib.bHapticsManager">
             <summary>AIO bHaptics Management</summary>
         </member>
+        <member name="E:bHapticsLib.bHapticsManager.DeviceStatusChanged">
+            <summary>
+            Fires when any device connects or disconnects from bHaptics Player.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsManager.ConnectionEstablished">
+            <summary>
+            Fires when connection to bHaptics Player is successfully established.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsManager.ConnectionLost">
+            <summary>
+            Fires when connection to bHaptics Player is lost or disconnected.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsManager.StatusChanged">
+            <summary>
+            Fires whenever the connection status changes.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            </summary>
+        </member>
+        <member name="E:bHapticsLib.bHapticsManager.BatteryLevelChanged">
+            <summary>
+            Fires when a device's battery level changes.
+            This event is raised on a background thread - subscribers must handle thread safety.
+            Note: Battery updates may not be frequent - typical interval is every few seconds to minutes.
+            </summary>
+        </member>
         <member name="F:bHapticsLib.bHapticsManager.MaxIntensityInInt">
             <value>Max Intensity of Point in Integer Array</value>
         </member>
@@ -133,6 +209,14 @@
         </member>
         <member name="P:bHapticsLib.bHapticsManager.Status">
             <value>Current Status of Connection</value>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.GetLastError">
+            <summary>Gets the last error from the connection for debugging</summary>
+            <returns>Error message string</returns>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.GetConnectionLog">
+            <summary>Gets detailed connection log for debugging connection issues</summary>
+            <returns>Full connection log with all attempts and state changes</returns>
         </member>
         <member name="M:bHapticsLib.bHapticsManager.Connect(System.String,System.String,System.Boolean,System.Int32)">
             <summary>Connects to the bHaptics Player</summary>
@@ -165,6 +249,13 @@
         <member name="M:bHapticsLib.bHapticsManager.IsAnyMotorActive(bHapticsLib.PositionID)">
             <summary>Gets if any motor of a specific device is currently at an intensity value of more than 0</summary>
             <returns>true if there is a motor active, otherwise false</returns>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.GetBatteryLevel(bHapticsLib.PositionID)">
+            <summary>
+            Gets the battery level for a specific device
+            </summary>
+            <param name="type">The device position</param>
+            <returns>Battery percentage (0-100) if available, otherwise null</returns>
         </member>
         <member name="M:bHapticsLib.bHapticsManager.IsPlaying(System.String)">
             <summary>Gets if a specified pattern is currently playing</summary>
@@ -494,6 +585,82 @@
         <member name="P:bHapticsLib.DotPoint.Intensity">
             <value>Point Intensity</value>
         </member>
+        <member name="T:bHapticsLib.DeviceStatusChangedEventArgs">
+            <summary>
+            Event arguments for device status changes
+            </summary>
+        </member>
+        <member name="P:bHapticsLib.DeviceStatusChangedEventArgs.Position">
+            <summary>Device position that changed</summary>
+        </member>
+        <member name="P:bHapticsLib.DeviceStatusChangedEventArgs.IsConnected">
+            <summary>True if device connected, false if disconnected</summary>
+        </member>
+        <member name="P:bHapticsLib.DeviceStatusChangedEventArgs.Timestamp">
+            <summary>Timestamp when the change was detected</summary>
+        </member>
+        <member name="M:bHapticsLib.DeviceStatusChangedEventArgs.#ctor(bHapticsLib.PositionID,System.Boolean)">
+            <summary>
+            Creates a new DeviceStatusChangedEventArgs
+            </summary>
+            <param name="position">Device position</param>
+            <param name="isConnected">Connection status</param>
+        </member>
+        <member name="M:bHapticsLib.DeviceStatusChangedEventArgs.ToString">
+            <summary>String representation of the event</summary>
+        </member>
+        <member name="T:bHapticsLib.ConnectionStatusChangedEventArgs">
+            <summary>
+            Event arguments for connection state changes
+            </summary>
+        </member>
+        <member name="P:bHapticsLib.ConnectionStatusChangedEventArgs.PreviousStatus">
+            <summary>Previous connection status</summary>
+        </member>
+        <member name="P:bHapticsLib.ConnectionStatusChangedEventArgs.NewStatus">
+            <summary>New connection status</summary>
+        </member>
+        <member name="P:bHapticsLib.ConnectionStatusChangedEventArgs.Timestamp">
+            <summary>Timestamp when the change occurred</summary>
+        </member>
+        <member name="M:bHapticsLib.ConnectionStatusChangedEventArgs.#ctor(bHapticsLib.bHapticsStatus,bHapticsLib.bHapticsStatus)">
+            <summary>
+            Creates a new ConnectionStatusChangedEventArgs
+            </summary>
+            <param name="previousStatus">Previous status</param>
+            <param name="newStatus">New status</param>
+        </member>
+        <member name="M:bHapticsLib.ConnectionStatusChangedEventArgs.ToString">
+            <summary>String representation of the event</summary>
+        </member>
+        <member name="T:bHapticsLib.BatteryLevelChangedEventArgs">
+            <summary>
+            Event arguments for battery level changes
+            </summary>
+        </member>
+        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.Position">
+            <summary>Device position that changed</summary>
+        </member>
+        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.BatteryLevel">
+            <summary>Current battery level (0-100), or null if not available</summary>
+        </member>
+        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.PreviousBatteryLevel">
+            <summary>Previous battery level (0-100), or null if not available</summary>
+        </member>
+        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.Timestamp">
+            <summary>Timestamp when the change was detected</summary>
+        </member>
+        <member name="M:bHapticsLib.BatteryLevelChangedEventArgs.#ctor(bHapticsLib.PositionID,System.Nullable{System.Int32},System.Nullable{System.Int32})">
+            <summary>
+            Creates a new BatteryLevelChangedEventArgs
+            </summary>
+            <param name="position">Device position</param>
+            <param name="batteryLevel">Current battery level</param>
+            <param name="previousBatteryLevel">Previous battery level</param>
+        </member>
+        <member name="M:bHapticsLib.BatteryLevelChangedEventArgs.ToString">
+            <summary>String representation of the event</summary>
+        </member>
         <member name="T:bHapticsLib.Extensions">
             <summary>Extra Extensions</summary>
         </member>
@@ -551,6 +718,12 @@
             <summary>Plays the HapticPattern</summary>
             <param name="scaleOption">Custom Playback Scale Option</param>
             <param name="rotationOption">Custom Playback Rotation Option</param>
+        </member>
+        <member name="P:bHapticsLib.Internal.Models.Connection.PlayerResponse.Battery">
+            <summary>
+            Battery levels for connected devices (key: device position, value: battery percentage 0-100)
+            Note: Battery data may be provided in the Status object per device
+            </summary>
         </member>
         <member name="T:bHapticsLib.Internal.ThreadedTask">
             <summary>Handles Multi-Threaded Tasking</summary>

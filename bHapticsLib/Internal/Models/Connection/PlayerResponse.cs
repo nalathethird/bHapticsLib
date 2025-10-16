@@ -52,5 +52,20 @@ namespace bHapticsLib.Internal.Models.Connection
                 return this[key].AsObject;
             }
         }
+
+        /// <summary>
+        /// Battery levels for connected devices (key: device position, value: battery percentage 0-100)
+        /// Note: Battery data may be provided in the Status object per device
+        /// </summary>
+        internal JSONObject Battery
+        {
+            get
+            {
+                string key = nameof(Battery);
+                if (this[key] == null)
+                    this[key] = new JSONObject();
+                return this[key].AsObject;
+            }
+        }
     }
 }
