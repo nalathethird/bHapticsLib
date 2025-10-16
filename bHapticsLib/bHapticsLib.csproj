@@ -40,8 +40,12 @@ Original by Herp Derpinstine, modernized by nalathethird for Resonite/FrooxEngin
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 		<DebugSymbols>false</DebugSymbols>
 	</PropertyGroup>
-	
-	<ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
 	  <None Include="..\LICENSE.md">
 	    <Pack>True</Pack>
 	    <PackagePath></PackagePath>

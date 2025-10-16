@@ -191,12 +191,10 @@ namespace bHapticsLib
                     Socket.TryConnect();
                 }
 
-                // Check for status changes
                 CheckAndFireStatusEvents();
 
                 if (IsConnected())
                 {
-                    // Check for device changes
                     CheckAndFireDeviceEvents();
 
                     RegisterRequest registerRequest;
@@ -227,7 +225,6 @@ namespace bHapticsLib
             {
                 var args = new ConnectionStatusChangedEventArgs(_lastStatus, currentStatus);
                 
-                // Fire general status changed event
                 try
                 {
                     StatusChanged?.Invoke(this, args);
@@ -261,17 +258,14 @@ namespace bHapticsLib
             if (Socket?.LastResponse?.ConnectedPositions == null)
                 return;
 
-            // Check all possible device positions
             foreach (PositionID position in Enum.GetValues(typeof(PositionID)))
             {
-                // Skip the "All" type positions that aren't real devices
-                if (position == PositionID.Vest) // Vest is handled via VestFront/VestBack
+                if (position == PositionID.Vest)
                     continue;
 
                 bool wasConnected = _lastDeviceStates.ContainsKey(position) && _lastDeviceStates[position];
                 bool isConnected = IsDeviceConnected(position);
 
-                // Check for device connection/disconnection
                 if (wasConnected != isConnected)
                 {
                     _lastDeviceStates[position] = isConnected;
@@ -291,7 +285,6 @@ namespace bHapticsLib
                     int? previousBattery = _lastBatteryLevels.ContainsKey(position) ? _lastBatteryLevels[position] : null;
                     int? currentBattery = GetBatteryLevel(position);
 
-                    // Fire event if battery level changed
                     if (currentBattery != previousBattery)
                     {
                         _lastBatteryLevels[position] = currentBattery;
@@ -307,7 +300,6 @@ namespace bHapticsLib
                 }
                 else
                 {
-                    // Device disconnected - clear battery cache
                     if (_lastBatteryLevels.ContainsKey(position))
                     {
                         _lastBatteryLevels.Remove(position);
@@ -445,7 +437,6 @@ namespace bHapticsLib
                 if (batteryNode != null && !batteryNode.IsNull)
                 {
                     int batteryLevel = batteryNode.AsInt;
-                    // Clamp to 0-100 range
                     return batteryLevel.Clamp(0, 100);
                 }
             }
