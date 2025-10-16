@@ -11,7 +11,7 @@ An Open-Source .NET Library for [bHaptics](https://www.bhaptics.com) Support wit
 
 ---
 
-## What's New in This Fork (v2.0.0)
+## What's New in This Fork (v1.0.7)
 
 ### **Modernization**
 - **Native WebSockets** - Uses `System.Net.WebSockets.ClientWebSocket` (no external dependencies unlike the main branch!)
@@ -628,7 +628,7 @@ Created by **Herp Derpinstine**
 - Full C# implementation of bHaptics SDK
 - Pattern system and protocol design
 
-### **This Fork (v2.0.0+)**
+### **This Fork (v1.0.7+)**
 Modernized by **nalathethird** for .NET 9 and Resonite/FrooxEngine
 - Repository: https://github.com/nalathethird/bHapticsLib
 - Native WebSocket implementation
