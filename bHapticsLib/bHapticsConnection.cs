@@ -40,14 +40,7 @@ namespace bHapticsLib
         /// </summary>
         public event EventHandler<ConnectionStatusChangedEventArgs> StatusChanged;
 
-        /// <summary>
-        /// Fires when a device's battery level changes.
-        /// This event is raised on a background thread - subscribers must handle thread safety.
-        /// </summary>
-        public event EventHandler<BatteryLevelChangedEventArgs> BatteryLevelChanged;
-
         private Dictionary<PositionID, bool> _lastDeviceStates = new Dictionary<PositionID, bool>();
-        private Dictionary<PositionID, int?> _lastBatteryLevels = new Dictionary<PositionID, int?>();
         private bHapticsStatus _lastStatus = bHapticsStatus.Disconnected;
         #endregion
 
@@ -278,33 +271,6 @@ namespace bHapticsLib
                     }
                     catch { /* Don't let subscriber exceptions crash the thread */ }
                 }
-
-                // Check for battery level changes (only for connected devices)
-                if (isConnected)
-                {
-                    int? previousBattery = _lastBatteryLevels.ContainsKey(position) ? _lastBatteryLevels[position] : null;
-                    int? currentBattery = GetBatteryLevel(position);
-
-                    if (currentBattery != previousBattery)
-                    {
-                        _lastBatteryLevels[position] = currentBattery;
-
-                        var batteryArgs = new BatteryLevelChangedEventArgs(position, currentBattery, previousBattery);
-
-                        try
-                        {
-                            BatteryLevelChanged?.Invoke(this, batteryArgs);
-                        }
-                        catch { /* Don't let subscriber exceptions crash the thread */ }
-                    }
-                }
-                else
-                {
-                    if (_lastBatteryLevels.ContainsKey(position))
-                    {
-                        _lastBatteryLevels.Remove(position);
-                    }
-                }
             }
         }
 
@@ -415,53 +381,6 @@ namespace bHapticsLib
                     returnval[i] = posArray[i].AsInt;
                 return returnval;
             }
-        }
-
-        /// <summary>
-        /// Gets the battery level for a specific device
-        /// </summary>
-        /// <param name="type">The device position</param>
-        /// <returns>Battery percentage (0-100) if available, otherwise null</returns>
-        public int? GetBatteryLevel(PositionID type)
-        {
-            if ((Socket == null) || (Socket.LastResponse == null))
-                return null;
-
-            // Check if battery data exists in the Battery object
-            JSONObject batteryData = Socket.LastResponse.Battery;
-            if (batteryData != null && !batteryData.IsNull)
-            {
-                string positionKey = type.ToPacketString();
-                JSONNode batteryNode = batteryData[positionKey];
-                
-                if (batteryNode != null && !batteryNode.IsNull)
-                {
-                    int batteryLevel = batteryNode.AsInt;
-                    return batteryLevel.Clamp(0, 100);
-                }
-            }
-
-            // Fallback: Some devices may include battery in Status object
-            // Format might be: Status[device]["battery"] or Status[device].battery
-            JSONObject statusData = Socket.LastResponse.Status;
-            if (statusData != null && !statusData.IsNull)
-            {
-                string positionKey = type.ToPacketString();
-                JSONNode deviceStatus = statusData[positionKey];
-                
-                if (deviceStatus != null && !deviceStatus.IsNull && deviceStatus.IsObject)
-                {
-                    // Check for battery field in device status
-                    JSONNode batteryNode = deviceStatus.AsObject["battery"];
-                    if (batteryNode != null && !batteryNode.IsNull)
-                    {
-                        int batteryLevel = batteryNode.AsInt;
-                        return batteryLevel.Clamp(0, 100);
-                    }
-                }
-            }
-
-            return null;
         }
         #endregion
 

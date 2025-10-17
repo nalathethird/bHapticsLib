@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	
 	<PropertyGroup>
-		<TargetFrameworks>netstandard21;net90</TargetFrameworks>
+		<TargetFrameworks>net9</TargetFrameworks>
 		<LangVersion>12.0</LangVersion>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -40,6 +40,10 @@ Original by Herp Derpinstine, modernized by nalathethird for Resonite/FrooxEngin
 		<GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
 		<DebugSymbols>false</DebugSymbols>
 	</PropertyGroup>
+	
+	<ItemGroup>
+	  <Compile Remove="Internal\WebSocketConnectionOLD.cs" />
+	</ItemGroup>
 
   <ItemGroup>
 	  <None Include="..\LICENSE.md">

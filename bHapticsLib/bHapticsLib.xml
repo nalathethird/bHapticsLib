@@ -31,12 +31,6 @@
             This event is raised on a background thread - subscribers must handle thread safety.
             </summary>
         </member>
-        <member name="E:bHapticsLib.bHapticsConnection.BatteryLevelChanged">
-            <summary>
-            Fires when a device's battery level changes.
-            This event is raised on a background thread - subscribers must handle thread safety.
-            </summary>
-        </member>
         <member name="P:bHapticsLib.bHapticsConnection.IPAddress">
             <value>IP Address of Host Device running the bHaptics Player</value>
         </member>
@@ -89,13 +83,6 @@
         <member name="M:bHapticsLib.bHapticsConnection.GetDeviceStatus(bHapticsLib.PositionID)">
             <summary>Gets the current status a specific device.</summary>
             <returns>An Integer Array containing the current intensity value for each motor of the device</returns>
-        </member>
-        <member name="M:bHapticsLib.bHapticsConnection.GetBatteryLevel(bHapticsLib.PositionID)">
-            <summary>
-            Gets the battery level for a specific device
-            </summary>
-            <param name="type">The device position</param>
-            <returns>Battery percentage (0-100) if available, otherwise null</returns>
         </member>
         <member name="M:bHapticsLib.bHapticsConnection.IsPlaying(System.String)">
             <summary>Gets if a specified pattern is currently playing</summary>
@@ -188,13 +175,6 @@
             This event is raised on a background thread - subscribers must handle thread safety.
             </summary>
         </member>
-        <member name="E:bHapticsLib.bHapticsManager.BatteryLevelChanged">
-            <summary>
-            Fires when a device's battery level changes.
-            This event is raised on a background thread - subscribers must handle thread safety.
-            Note: Battery updates may not be frequent - typical interval is every few seconds to minutes.
-            </summary>
-        </member>
         <member name="F:bHapticsLib.bHapticsManager.MaxIntensityInInt">
             <value>Max Intensity of Point in Integer Array</value>
         </member>
@@ -249,13 +229,6 @@
         <member name="M:bHapticsLib.bHapticsManager.IsAnyMotorActive(bHapticsLib.PositionID)">
             <summary>Gets if any motor of a specific device is currently at an intensity value of more than 0</summary>
             <returns>true if there is a motor active, otherwise false</returns>
-        </member>
-        <member name="M:bHapticsLib.bHapticsManager.GetBatteryLevel(bHapticsLib.PositionID)">
-            <summary>
-            Gets the battery level for a specific device
-            </summary>
-            <param name="type">The device position</param>
-            <returns>Battery percentage (0-100) if available, otherwise null</returns>
         </member>
         <member name="M:bHapticsLib.bHapticsManager.IsPlaying(System.String)">
             <summary>Gets if a specified pattern is currently playing</summary>
@@ -339,6 +312,34 @@
             <param name="durationMillis">Duration of Playback</param>
             <param name="position">Position for Playback</param>
             <param name="dotPoints">List of DotPoint</param>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.PlayMotors(System.String,System.Int32,bHapticsLib.PositionID,System.Byte[])">
+            <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+            <param name="key">Key id of this pattern</param>
+            <param name="durationMillis">Duration of Playback in milliseconds</param>
+            <param name="position">Position for Playback</param>
+            <param name="motors">Array of motor intensities (0-100 per motor)</param>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.PlayMotors(System.String,System.Int32,bHapticsLib.PositionID,System.Int32[])">
+            <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+            <param name="key">Key id of this pattern</param>
+            <param name="durationMillis">Duration of Playback in milliseconds</param>
+            <param name="position">Position for Playback</param>
+            <param name="motors">Array of motor intensities (0-500 per motor)</param>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.PlayMotors(System.String,System.Int32,bHapticsLib.PositionID,System.Collections.Generic.List{System.Byte})">
+            <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+            <param name="key">Key id of this pattern</param>
+            <param name="durationMillis">Duration of Playback in milliseconds</param>
+            <param name="position">Position for Playback</param>
+            <param name="motors">List of motor intensities (0-100 per motor)</param>
+        </member>
+        <member name="M:bHapticsLib.bHapticsManager.PlayMotors(System.String,System.Int32,bHapticsLib.PositionID,System.Collections.Generic.List{System.Int32})">
+            <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+            <param name="key">Key id of this pattern</param>
+            <param name="durationMillis">Duration of Playback in milliseconds</param>
+            <param name="position">Position for Playback</param>
+            <param name="motors">List of motor intensities (0-500 per motor)</param>
         </member>
         <member name="M:bHapticsLib.bHapticsManager.Play``1(System.String,System.Int32,bHapticsLib.PositionID,``0)">
             <summary>Plays a pattern</summary>
@@ -633,34 +634,6 @@
         <member name="M:bHapticsLib.ConnectionStatusChangedEventArgs.ToString">
             <summary>String representation of the event</summary>
         </member>
-        <member name="T:bHapticsLib.BatteryLevelChangedEventArgs">
-            <summary>
-            Event arguments for battery level changes
-            </summary>
-        </member>
-        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.Position">
-            <summary>Device position that changed</summary>
-        </member>
-        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.BatteryLevel">
-            <summary>Current battery level (0-100), or null if not available</summary>
-        </member>
-        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.PreviousBatteryLevel">
-            <summary>Previous battery level (0-100), or null if not available</summary>
-        </member>
-        <member name="P:bHapticsLib.BatteryLevelChangedEventArgs.Timestamp">
-            <summary>Timestamp when the change was detected</summary>
-        </member>
-        <member name="M:bHapticsLib.BatteryLevelChangedEventArgs.#ctor(bHapticsLib.PositionID,System.Nullable{System.Int32},System.Nullable{System.Int32})">
-            <summary>
-            Creates a new BatteryLevelChangedEventArgs
-            </summary>
-            <param name="position">Device position</param>
-            <param name="batteryLevel">Current battery level</param>
-            <param name="previousBatteryLevel">Previous battery level</param>
-        </member>
-        <member name="M:bHapticsLib.BatteryLevelChangedEventArgs.ToString">
-            <summary>String representation of the event</summary>
-        </member>
         <member name="T:bHapticsLib.Extensions">
             <summary>Extra Extensions</summary>
         </member>
@@ -718,12 +691,6 @@
             <summary>Plays the HapticPattern</summary>
             <param name="scaleOption">Custom Playback Scale Option</param>
             <param name="rotationOption">Custom Playback Rotation Option</param>
-        </member>
-        <member name="P:bHapticsLib.Internal.Models.Connection.PlayerResponse.Battery">
-            <summary>
-            Battery levels for connected devices (key: device position, value: battery percentage 0-100)
-            Note: Battery data may be provided in the Status object per device
-            </summary>
         </member>
         <member name="T:bHapticsLib.Internal.ThreadedTask">
             <summary>Handles Multi-Threaded Tasking</summary>

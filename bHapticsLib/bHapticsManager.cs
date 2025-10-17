@@ -48,17 +48,6 @@ namespace bHapticsLib
             add { Connection.StatusChanged += value; }
             remove { Connection.StatusChanged -= value; }
         }
-
-        /// <summary>
-        /// Fires when a device's battery level changes.
-        /// This event is raised on a background thread - subscribers must handle thread safety.
-        /// Note: Battery updates may not be frequent - typical interval is every few seconds to minutes.
-        /// </summary>
-        public static event EventHandler<BatteryLevelChangedEventArgs> BatteryLevelChanged
-        {
-            add { Connection.BatteryLevelChanged += value; }
-            remove { Connection.BatteryLevelChanged -= value; }
-        }
         #endregion
 
         #region Max Values
@@ -138,14 +127,6 @@ namespace bHapticsLib
         /// <returns>true if there is a motor active, otherwise false</returns>
         public static bool IsAnyMotorActive(PositionID type)
             => GetDeviceStatus(type)?.ContainsValueMoreThan(0) ?? false;
-
-        /// <summary>
-        /// Gets the battery level for a specific device
-        /// </summary>
-        /// <param name="type">The device position</param>
-        /// <returns>Battery percentage (0-100) if available, otherwise null</returns>
-        public static int? GetBatteryLevel(PositionID type)
-            => Connection.GetBatteryLevel(type);
         #endregion
 
         #region IsPlaying
@@ -252,6 +233,40 @@ namespace bHapticsLib
         /// <param name="dotPoints">List of DotPoint</param>
         public static void Play(string key, int durationMillis, PositionID position, List<DotPoint> dotPoints)
             => Connection.Play(key, durationMillis, position, dotPoints, (PathPoint[])null);
+        #endregion
+
+        #region PlayMotors
+        /// <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+        /// <param name="key">Key id of this pattern</param>
+        /// <param name="durationMillis">Duration of Playback in milliseconds</param>
+        /// <param name="position">Position for Playback</param>
+        /// <param name="motors">Array of motor intensities (0-100 per motor)</param>
+        public static void PlayMotors(string key, int durationMillis, PositionID position, byte[] motors)
+            => Connection.Play(key, durationMillis, position, motors, (PathPoint[])null);
+
+        /// <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+        /// <param name="key">Key id of this pattern</param>
+        /// <param name="durationMillis">Duration of Playback in milliseconds</param>
+        /// <param name="position">Position for Playback</param>
+        /// <param name="motors">Array of motor intensities (0-500 per motor)</param>
+        public static void PlayMotors(string key, int durationMillis, PositionID position, int[] motors)
+            => Connection.Play(key, durationMillis, position, motors, (PathPoint[])null);
+
+        /// <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+        /// <param name="key">Key id of this pattern</param>
+        /// <param name="durationMillis">Duration of Playback in milliseconds</param>
+        /// <param name="position">Position for Playback</param>
+        /// <param name="motors">List of motor intensities (0-100 per motor)</param>
+        public static void PlayMotors(string key, int durationMillis, PositionID position, List<byte> motors)
+            => Connection.Play(key, durationMillis, position, motors, (PathPoint[])null);
+
+        /// <summary>Plays immediate motor values (Unity SDK compatible method)</summary>
+        /// <param name="key">Key id of this pattern</param>
+        /// <param name="durationMillis">Duration of Playback in milliseconds</param>
+        /// <param name="position">Position for Playback</param>
+        /// <param name="motors">List of motor intensities (0-500 per motor)</param>
+        public static void PlayMotors(string key, int durationMillis, PositionID position, List<int> motors)
+            => Connection.Play(key, durationMillis, position, motors, (PathPoint[])null);
         #endregion
 
         #region PlayPath
