@@ -16,7 +16,7 @@
 		
 		<Authors>Herp Derpinstine; nalathethird (modernization)</Authors>
 		<Description>An Open-Source .NET Library for bHaptics Support.
-Modernized for .NET Standard 2.1 and .NET 9 with native WebSocket support.
+Modernized for .NET 9 with native WebSocket support.
 Original by Herp Derpinstine, modernized by nalathethird for Resonite/FrooxEngine compatibility.</Description>
 		<PackageId>bHapticsLib</PackageId>
 		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
@@ -26,8 +26,8 @@ Original by Herp Derpinstine, modernized by nalathethird for Resonite/FrooxEngin
         <RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/nalathethird/bHapticsLib.git</RepositoryUrl>
         <Title>bHapticsLib (Modernized)</Title>
-        <Version>1.0.7</Version>
-		<PackageReleaseNotes>v1.0.7 - Modernized for .NET 9 with native ClientWebSocket. Removed deprecated framework targets. Optimized for Resonite/FrooxEngine.</PackageReleaseNotes>
+        <Version>1.0.8</Version>
+		<PackageReleaseNotes>v1.0.8 - Modernized for .NET 9 with native ClientWebSocket. Removed deprecated framework targets. Optimized for Resonite/FrooxEngine.</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
