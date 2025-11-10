@@ -1,8 +1,10 @@
 ﻿using bHapticsLib.Internal.SimpleJSON;
+using MessagePack;
 
 namespace bHapticsLib
 {
-    /// <summary>Rotational Option for Haptic Patterns</summary>
+    /// <summary>Rotational Option for Haptic Patterns (supports both MessagePack and JSON serialization)</summary>
+    [MessagePackObject]
     public class RotationOption
     {
         internal JSONObject node = new JSONObject();
@@ -10,6 +12,7 @@ namespace bHapticsLib
         /// <summary>Rotational Option for Haptic Patterns</summary>
         /// <param name="offsetAngleX">Rotation Angle X Axis</param>
         /// <param name="offsetY">Rotation Y Axis</param>
+        [SerializationConstructor]
         public RotationOption(float offsetAngleX = 0, float offsetY = 0)
         {
             OffsetAngleX = offsetAngleX;
@@ -17,6 +20,7 @@ namespace bHapticsLib
         }
 
         /// <value>Rotation Angle X Axis</value>
+        [Key(0)]
         public float OffsetAngleX
         {
             get => node["offsetAngleX"].AsFloat;
@@ -24,6 +28,7 @@ namespace bHapticsLib
         }
 
         /// <value>Rotation Y Axis</value>
+        [Key(1)]
         public float OffsetY
         {
             get => node["offsetY"].AsFloat;

@@ -1,8 +1,10 @@
 ﻿using bHapticsLib.Internal.SimpleJSON;
+using MessagePack;
 
 namespace bHapticsLib
 {
-    /// <summary>Haptic Point for Dot Mode</summary>
+    /// <summary>Haptic Point for Dot Mode (supports both MessagePack and JSON serialization)</summary>
+    [MessagePackObject]
     public class DotPoint
     {
         internal JSONObject node = new JSONObject();
@@ -10,6 +12,7 @@ namespace bHapticsLib
         /// <summary>Haptic Point for Dot Mode</summary>
         /// <param name="index">Index of Haptic Motor</param>
         /// <param name="intensity">Point Intensity</param>
+        [SerializationConstructor]
         public DotPoint(int index = 0, int intensity = 50)
         {
             Index = index;
@@ -17,6 +20,7 @@ namespace bHapticsLib
         }
 
         /// <value>Index of Haptic Motor</value>
+        [Key(0)]
         public int Index
         {
             get => node["index"].AsInt;
@@ -24,6 +28,7 @@ namespace bHapticsLib
         }
 
         /// <value>Point Intensity</value>
+        [Key(1)]
         public int Intensity
         {
             get => node["intensity"].AsInt;

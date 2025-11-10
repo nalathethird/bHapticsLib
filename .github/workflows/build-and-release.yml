@@ -1,0 +1,160 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive  # Clone MessagePack-CSharp submodule
+        fetch-depth: 0  # Get full history for version detection
+    
+    - name: Setup .NET 9
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore bHapticsLib.sln
+    
+    - name: Build solution (Release)
+      run: dotnet build bHapticsLib.sln -c Release --no-restore
+    
+    - name: Get version from BuildInfo.cs
+      id: get_version
+      shell: pwsh
+      run: |
+        $content = Get-Content "Properties\BuildInfo.cs" -Raw
+        if ($content -match 'Version\s*=\s*"([^"]+)"') {
+          $version = $matches[1]
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "TAG=v$version" >> $env:GITHUB_OUTPUT
+          echo "Detected version: $version"
+        } else {
+          echo "ERROR: Could not find version in BuildInfo.cs"
+          exit 1
+        }
+    
+    - name: Verify merged DLL
+      shell: pwsh
+      run: |
+        $dllPath = "bHapticsLib\Output\Release\net9\bHapticsLib.dll"
+        if (Test-Path $dllPath) {
+          $size = [math]::Round((Get-Item $dllPath).Length / 1KB, 2)
+          echo "? bHapticsLib.dll found: $size KB"
+          
+          # Check that MessagePack DLLs are NOT present (they should be merged)
+          if (Test-Path "bHapticsLib\Output\Release\net9\MessagePack.dll") {
+            echo "? ERROR: MessagePack.dll still exists (merge failed)"
+            exit 1
+          }
+          if (Test-Path "bHapticsLib\Output\Release\net9\MessagePack.Annotations.dll") {
+            echo "? ERROR: MessagePack.Annotations.dll still exists (merge failed)"
+            exit 1
+          }
+          
+          echo "? MessagePack successfully merged into bHapticsLib.dll"
+        } else {
+          echo "? ERROR: bHapticsLib.dll not found at $dllPath"
+          exit 1
+        }
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: bHapticsLib-v${{ steps.get_version.outputs.VERSION }}-net9
+        path: |
+          bHapticsLib/Output/Release/net9/bHapticsLib.dll
+          bHapticsLib/Output/Release/net9/bHapticsLib.xml
+          README.md
+          LICENSE.md
+        retention-days: 90
+    
+    - name: Check if tag exists
+      id: check_tag
+      shell: pwsh
+      run: |
+        $tag = "${{ steps.get_version.outputs.TAG }}"
+        git fetch --tags
+        $tagExists = git tag -l $tag
+        if ($tagExists) {
+          echo "TAG_EXISTS=true" >> $env:GITHUB_OUTPUT
+          echo "??  Tag $tag already exists"
+        } else {
+          echo "TAG_EXISTS=false" >> $env:GITHUB_OUTPUT
+          echo "? Tag $tag does not exist yet"
+        }
+    
+    - name: Create Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master' && steps.check_tag.outputs.TAG_EXISTS == 'false'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.get_version.outputs.TAG }}
+        name: bHapticsLib v${{ steps.get_version.outputs.VERSION }}
+        body: |
+          # bHapticsLib v${{ steps.get_version.outputs.VERSION }}
+          
+          ## ?? What's New
+          
+          - **MessagePack Support**: High-performance binary serialization (4-5x faster, 60-70% smaller)
+          - **Single Merged DLL**: MessagePack is included directly in bHapticsLib.dll - no separate dependencies!
+          - **Native WebSocket**: Uses System.Net.WebSockets.ClientWebSocket
+          - **Event System**: Real-time device and connection state notifications
+          - **Battery Monitoring**: Query and monitor device battery levels
+          - **.NET 9 Target**: Optimized for modern .NET
+          
+          ## ?? Installation
+          
+          Download `bHapticsLib.dll` and reference it in your project. That's it - MessagePack is already included!
+          
+          ## ?? Documentation
+          
+          See [README.md](https://github.com/nalathethird/bHapticsLib/blob/master/README.md) for full documentation.
+          
+          ## ?? What's Included
+          
+          - `bHapticsLib.dll` - Main library with MessagePack merged in (~359 KB)
+          - `bHapticsLib.xml` - IntelliSense documentation
+          
+          ## ?? Breaking Changes
+          
+          None! Fully backwards compatible with existing code.
+          
+          ## ?? Bug Fixes
+          
+          - Fixed vest front/back positioning for v2 API (TactSuit Air support)
+          - Improved WebSocket connection stability
+          
+          ---
+          
+          **Full Changelog**: https://github.com/nalathethird/bHapticsLib/compare/v1.0.8...v${{ steps.get_version.outputs.VERSION }}
+        files: |
+          bHapticsLib/Output/Release/net9/bHapticsLib.dll
+          bHapticsLib/Output/Release/net9/bHapticsLib.xml
+          README.md
+          LICENSE.md
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Release info
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      shell: pwsh
+      run: |
+        if ("${{ steps.check_tag.outputs.TAG_EXISTS }}" -eq "true") {
+          echo "??  Skipped release creation - tag ${{ steps.get_version.outputs.TAG }} already exists"
+          echo "To create a new release, update the version in Properties\BuildInfo.cs"
+        } else {
+          echo "? Release created: ${{ steps.get_version.outputs.TAG }}"
+          echo "?? Download: https://github.com/nalathethird/bHapticsLib/releases/tag/${{ steps.get_version.outputs.TAG }}"
+        }

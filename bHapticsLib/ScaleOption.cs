@@ -1,8 +1,10 @@
 ﻿using bHapticsLib.Internal.SimpleJSON;
+using MessagePack;
 
 namespace bHapticsLib
 {
-    /// <summary>Scaling Option for Haptic Patterns</summary>
+    /// <summary>Scaling Option for Haptic Patterns (supports both MessagePack and JSON serialization)</summary>
+    [MessagePackObject]
     public class ScaleOption
     {
         internal JSONObject node = new JSONObject();
@@ -10,6 +12,7 @@ namespace bHapticsLib
         /// <summary>Scaling Option for Haptic Patterns</summary>
         /// <param name="intensity">Scale of Intensity, default is 1x</param>
         /// <param name="duration">Scale of Duration of Playback, default is 1x</param>
+        [SerializationConstructor]
         public ScaleOption(float intensity = 1f, float duration = 1f)
         {
             Intensity = intensity;
@@ -17,6 +20,7 @@ namespace bHapticsLib
         }
 
         /// <value>Scale of Intensity, default is 1x</value>
+        [Key(0)]
         public float Intensity
         {
             get => node["intensity"].AsFloat;
@@ -24,6 +28,7 @@ namespace bHapticsLib
         }
 
         /// <value>Scale of Duration of Playback, default is 1x</value>
+        [Key(1)]
         public float Duration
         {
             get => node["duration"].AsFloat;

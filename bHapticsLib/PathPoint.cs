@@ -1,8 +1,10 @@
 ﻿using bHapticsLib.Internal.SimpleJSON;
+using MessagePack;
 
 namespace bHapticsLib
 {
-    /// <summary>Haptic Point for Path Mode</summary>
+    /// <summary>Haptic Point for Path Mode (supports both MessagePack and JSON serialization)</summary>
+    [MessagePackObject]
     public class PathPoint
     {
         internal JSONObject node = new JSONObject();
@@ -12,6 +14,7 @@ namespace bHapticsLib
         /// <param name="y">Y Axis of Point Position</param>
         /// <param name="intensity">Point Intensity</param>
         /// <param name="motorCount">Point Motor Count</param>
+        [SerializationConstructor]
         public PathPoint(float x = 0, float y = 0, int intensity = 50, int motorCount = 3)
         {
             X = x;
@@ -21,6 +24,7 @@ namespace bHapticsLib
         }
 
         /// <value>X Axis of Point Position</value>
+        [Key(0)]
         public float X
         {
             get => node["x"].AsFloat;
@@ -28,6 +32,7 @@ namespace bHapticsLib
         }
 
         /// <value>Y Axis of Point Position</value>
+        [Key(1)]
         public float Y
         {
             get => node["y"].AsFloat;
@@ -35,6 +40,7 @@ namespace bHapticsLib
         }
 
         /// <value>Point Intensity</value>
+        [Key(2)]
         public int Intensity
         {
             get => node["intensity"].AsInt;
@@ -42,6 +48,7 @@ namespace bHapticsLib
         }
 
         /// <value>Point Motor Count</value>
+        [Key(3)]
         public int MotorCount
         {
             get => node["motorCount"].AsInt;

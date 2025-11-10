@@ -14,6 +14,62 @@ namespace TestApplication
 
         private static void Main()
         {
+            // Show menu
+            Console.WriteLine("=== bHapticsLib Test Application ===");
+            Console.WriteLine();
+            Console.WriteLine("Choose test mode:");
+            Console.WriteLine("1. Interactive Test (original)");
+            Console.WriteLine("2. Data Debug Test (see sent/received data)");
+            Console.WriteLine("3. Event System Test");
+            Console.WriteLine("4. WebSocket Data Inspector (ALL data types & structures)");
+            Console.WriteLine("5. Raw WebSocket Logger (see JSON structures)");
+            Console.WriteLine("6. ALL DEVICE TEST (vibrate every connected device)");
+            Console.WriteLine("7. COMPLETE DATA DUMP (EVERY WebSocket field & value)");
+            Console.WriteLine("8. MessagePack Integration Test (NEW - test high-performance MessagePack input)");
+            Console.WriteLine();
+            Console.Write("Enter choice (1-8): ");
+            
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "2":
+                    DataDebugTest.Run();
+                    return;
+                
+                case "3":
+                    EventSystemTest.RunTest();
+                    return;
+
+                case "4":
+                    WebSocketDataInspector.Run();
+                    return;
+
+                case "5":
+                    RawWebSocketLogger.Run();
+                    return;
+
+                case "6":
+                    AllDeviceTest.Run();
+                    return;
+
+                case "7":
+                    CompleteDataDump.Run();
+                    return;
+
+                case "8":
+                    MessagePackTest.Run();
+                    return;
+
+                case "1":
+                default:
+                    RunInteractiveTest();
+                    return;
+            }
+        }
+
+        private static void RunInteractiveTest()
+        {
             string testFeedbackPath = Path.Combine(Path.GetDirectoryName(typeof(Program).Assembly.Location), "testfeedback.tact");
             testFeedback = HapticPattern.LoadFromFile("testfeedback", testFeedbackPath);
 
@@ -78,6 +134,10 @@ namespace TestApplication
 
             Console.WriteLine($"Press NUMPAD-7 for {nameof(bHapticsManager.PlayMirrored)}(\"testPlayFront\", 1000, {nameof(PositionID)}.{nameof(PositionID.HandLeft)}, {nameof(TestPacket)}, {nameof(MirrorDirection)}.{nameof(MirrorDirection.Both)} )");
             Console.WriteLine($"Press NUMPAD-8 for {nameof(bHapticsManager.PlayMirrored)}(\"testPlayBack\", 1000, {nameof(PositionID)}.{nameof(PositionID.ArmRight)}, {nameof(TestPacket)}, {nameof(MirrorDirection)}.{nameof(MirrorDirection.Both)}  )");
+            Console.WriteLine();
+
+            // NEW: Add PlayMotors test
+            Console.WriteLine($"Press NUMPAD-9 for {nameof(bHapticsManager.PlayMotors)}(\"motorTest\", 1000, {nameof(PositionID)}.{nameof(PositionID.Vest)}, byte[20] with motors 0,5,10 active)");
             Console.WriteLine();
 
             Console.WriteLine("Press Enter to Disconnect.");
@@ -191,6 +251,16 @@ namespace TestApplication
                     goto default;
                 case ConsoleKey.NumPad8:
                     bHapticsManager.PlayMirrored("testPlayBackMirrored", 1000, PositionID.ArmRight, TestPacket, MirrorDirection.Both);
+                    goto default;
+
+                // NEW: PlayMotors test
+                case ConsoleKey.NumPad9:
+                    byte[] motors = new byte[20];
+                    motors[0] = 100;
+                    motors[5] = 80;
+                    motors[10] = 60;
+                    bHapticsManager.PlayMotors("motorTest", 1000, PositionID.Vest, motors);
+                    Console.WriteLine("PlayMotors called: motors[0]=100, motors[5]=80, motors[10]=60");
                     goto default;
 
 
